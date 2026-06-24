@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - internal
+      - microservices-net
 
   app:
     build: .
@@ -25,8 +25,9 @@ services:
     depends_on:
       - postgres
     networks:
-      - internal
+      - microservices-net
 
 networks:
-  internal:
+  microservices-net:
     driver: bridge
+    external: true
