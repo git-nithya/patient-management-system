@@ -1,16 +1,4 @@
 services:
-  postgres:
-    image: postgres:16
-    container_name: patient-service-db
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: mydb
-    ports:
-      - "5432:5432"
-    networks:
-      - microservices-net
-
   app:
     build: .
     image: patient-service
@@ -21,9 +9,11 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://patient-service-db:5432/mydb
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: secret
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-    depends_on:
-      - postgres
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     networks:
       - microservices-net
 
