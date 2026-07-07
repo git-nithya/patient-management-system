@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    image: analytics-service
+    container_name: analytics-service
+    ports:
+      - "4002:4002"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+      - microservices-net
+
+networks:
+  microservices-net:
+    driver: bridge
+    external: true
