@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    image: api-gateway
+    container_name: api-gateway
+    ports:
+      - "4004:4004"
+    networks:
+      - microservices-net
+
+networks:
+  microservices-net:
+    driver: bridge
+    external: true
