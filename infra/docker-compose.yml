@@ -1,15 +1,31 @@
 version: '3.8'
 
 services:
-  postgres:
+  patient_db:
     image: postgres:16
     container_name: patient-service-db
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: secret
-      POSTGRES_DB: mydb
+      POSTGRES_DB: patientdb
     ports:
-      - "5432:5432"
+      - "5001:5432"
+    volumes:
+      - patient_db_data:/var/lib/postgresql/data
+    networks:
+      - microservices-net
+
+  auth_db:
+    image: postgres:16
+    container_name: auth-service-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: authdb
+    ports:
+      - "5002:5432"
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
     networks:
       - microservices-net
 
@@ -52,6 +68,8 @@ services:
 
 volumes:
   kafka_data:
+  patient_db_data:
+  auth_db_data:
 
 networks:
   microservices-net:
