@@ -9,8 +9,17 @@ import com.patientmgmt.patientservice.kafka.KafkaProducer;
 import com.patientmgmt.patientservice.mapper.PatientServiceMapper;
 import com.patientmgmt.patientservice.model.Patient;
 import com.patientmgmt.patientservice.repository.PatientServiceRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.ResponseBytes;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -21,12 +30,17 @@ public class PatientService {
     private PatientServiceRepository patientServiceRepository;
     private BillingServiceGrpcClient billingServiceGrpcClient;
     private KafkaProducer kafkaProducer;
+    private S3Client s3Client;
+    @Value("${aws.bucket.name}")
+    private String bucketName;
 
     public PatientService(PatientServiceRepository patientServiceRepository,
-                          BillingServiceGrpcClient billingServiceGrpcClient, KafkaProducer kafkaProducer) {
+                          BillingServiceGrpcClient billingServiceGrpcClient, KafkaProducer kafkaProducer,
+                          S3Client s3Client) {
         this.patientServiceRepository = patientServiceRepository;
         this.billingServiceGrpcClient = billingServiceGrpcClient;
         this.kafkaProducer = kafkaProducer;
+        this.s3Client = s3Client;
     }
 
     public List<PatientResponseDTO> getAllPatients() {
@@ -64,5 +78,22 @@ public class PatientService {
 
     public void deletePatient(UUID id) {
         patientServiceRepository.deleteById(id);
+    }
+
+    public void uploadFile(MultipartFile file) throws IOException {
+        s3Client.putObject(PutObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(file.getOriginalFilename())
+                        .build(),
+                RequestBody.fromBytes(file.getBytes()));
+    }
+
+    public byte[] downloadFile(String key) {
+        ResponseBytes<GetObjectResponse> objectAsBytes =
+                s3Client.getObjectAsBytes(GetObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(key)
+                        .build());
+        return objectAsBytes.asByteArray();
     }
 }
