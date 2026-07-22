@@ -1,5 +1,6 @@
 package com.patientmgmt.patientservice.service;
 
+import com.patientmgmt.patientservice.dto.PagedPatientResponseDTO;
 import com.patientmgmt.patientservice.dto.PatientRequestDTO;
 import com.patientmgmt.patientservice.dto.PatientResponseDTO;
 import com.patientmgmt.patientservice.exception.EmailAlreadyExistsException;
@@ -10,7 +11,12 @@ import com.patientmgmt.patientservice.mapper.PatientServiceMapper;
 import com.patientmgmt.patientservice.model.Patient;
 import com.patientmgmt.patientservice.repository.PatientServiceRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -48,6 +54,23 @@ public class PatientService {
         return patients.stream()
                 .map(PatientServiceMapper::toDTO)
                 .toList();
+    }
+
+    public PagedPatientResponseDTO getAllPagedPatients(int page, int size, String sort, String sortField, String searchField) {
+        Pageable pageable = PageRequest.of(page-1, size,
+                sort.equalsIgnoreCase("desc") ?
+                Sort.by(sortField).descending() : Sort.by(sortField).ascending());
+        Page<Patient> patientPage;
+        if (null == searchField || searchField.isBlank()) {
+            patientPage = patientServiceRepository.findAll(pageable);
+        } else {
+            patientPage = patientServiceRepository.findByNameContainingIgnoreCase(searchField, pageable);
+        }
+        List<PatientResponseDTO> patientResponseDTOList = patientPage.getContent().stream()
+                .map(PatientServiceMapper::toDTO)
+                .toList();
+        return new PagedPatientResponseDTO(patientResponseDTOList, patientPage.getNumber()+1, patientPage.getSize(),
+                patientPage.getTotalPages(), (int) patientPage.getTotalElements());
     }
 
     public PatientResponseDTO createPatient(PatientRequestDTO patientRequestDTO) {
