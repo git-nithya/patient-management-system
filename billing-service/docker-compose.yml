@@ -6,6 +6,8 @@ services:
     ports:
       - "4001:4001"
       - "9001:9001"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     networks:
       - microservices-net
 

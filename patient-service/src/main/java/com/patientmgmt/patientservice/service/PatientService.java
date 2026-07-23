@@ -10,6 +10,8 @@ import com.patientmgmt.patientservice.kafka.KafkaProducer;
 import com.patientmgmt.patientservice.mapper.PatientServiceMapper;
 import com.patientmgmt.patientservice.model.Patient;
 import com.patientmgmt.patientservice.repository.PatientServiceRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

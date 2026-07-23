@@ -1,5 +1,6 @@
 package com.patientmgmt.patientservice.kafka;
 
+import com.patientmgmt.kafka.billing.event.CreateBillingAccountEvent;
 import com.patientmgmt.kafka.patient.event.PatientEvent;
 import com.patientmgmt.patientservice.model.Patient;
 import org.slf4j.Logger;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Service;
 public class KafkaProducer {
 
     private final KafkaTemplate<String, byte[]> kafkaTemplate;
-    public static final String TOPIC = "patient";
     private static final Logger log = LoggerFactory.getLogger(KafkaProducer.class);
 
     @Autowired
@@ -28,9 +28,24 @@ public class KafkaProducer {
                 .setEventType("PATIENT_CREATED")
                 .build();
         try {
-            kafkaTemplate.send(TOPIC, patientEvent.toByteArray());
+            kafkaTemplate.send("patient", patientEvent.toByteArray());
         } catch (Exception e) {
             log.error("Error sending PatientCreated event: {}", patientEvent);
+        }
+
+    }
+
+    public void sendCreateBillingAccountEvent(String patientId, String name, String email) {
+        CreateBillingAccountEvent createBillingAccountEvent = CreateBillingAccountEvent.newBuilder()
+                .setPatientId(patientId)
+                .setName(name)
+                .setEmail(email)
+                .setEventType("CREATE_BILLING_ACCOUNT_EVENT")
+                .build();
+        try {
+            kafkaTemplate.send("billing-account", createBillingAccountEvent.toByteArray());
+        } catch (Exception e) {
+            log.error("Error sending CreateBillingAccount event: {}", createBillingAccountEvent);
         }
 
     }

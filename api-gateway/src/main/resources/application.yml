@@ -8,10 +8,20 @@ auth:
 spring:
   application:
     name: api-gateway
+  data:
+    redis:
+      host: redis
+      port: 6379
   cloud:
     gateway:
       server:
         webflux:
+          default-filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.burstCapacity: 2
+                redis-rate-limiter.replenishRate: 2
+                key-resolver: "#{@ipKeyResolver}"
           routes:
             # Route for /auth/** to auth-service
             - id: auth-service-route
