@@ -76,11 +76,31 @@ services:
     networks:
       - microservices-net
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - microservices-net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - microservices-net
+
 volumes:
   kafka_data:
   patient_db_data:
   auth_db_data:
   redis_data:
+  prometheus-data:
 
 networks:
   microservices-net:
